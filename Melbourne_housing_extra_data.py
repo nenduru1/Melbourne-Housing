@@ -10,6 +10,7 @@ import pandas as pd
 import datetime
 import matplotlib.pylab as plt
 data=pd.read_csv('Melbourne_housing_extra_data.csv')
+data=pd.read_csv('Melbourne_housing_extra_data.csv',dayfirst=True,parse_dates=True,index_col='Date')
 data.head()
 
 def val_counts(var):
@@ -27,17 +28,19 @@ val_counts('Postcode')
 #plot graph for price,distance and date
 #building area,year bulit can be used for crosstabulation with other variables
 
-data['date']=pd.to_datetime(data.Date)
+data['date']=pd.to_datetime(data.index)
 data['year']=data.date.dt.year
 data['month']=data.date.dt.month
-data=data.set_index(['year','month'])
-data.sort_index(ascending=True,inplace=True)
+yr_mon=data[['year','month']]
+#data=data.set_index(['year','month'])
+#data.sort_index(ascending=True,inplace=True)
 ts=data['Price']
 ts.head(20)
 plt.plot(ts)
 pd.crosstab(data.Rooms,data.Type)
 pd.crosstab(data.index,data.Rooms)
-pd.crosstab(data.index,data.Method)
+dates_sales=pd.crosstab(data.index,data.Method)
+dates_sales.to_csv('dates_sales.csv')
 data.groupby('Postcode')['Price'].mean().astype(int64)
 
 for i in data['Postcode'].unique():
@@ -49,3 +52,10 @@ data.groupby('Postcode')['Price'].isnull.sum()
 df = pd.DataFrame({'Name': pd.Categorical(['John Doe', 'Jane Doe', 'Bob Smith']), 'Score1': np.arange(3), 'Score2': np.arange(3, 6, 1)})
 for i in df.Name:
     print(df.loc[df.Name==i,'Score2'])
+    
+from datetime import datetime
+oldformat = '20072015'
+for i in data.Date:
+    datetimeobject = datetime.strptime(i,'%d%m%Y')
+    newformat = datetimeobject.strftime('%m-%d-%Y')
+#print newformat
